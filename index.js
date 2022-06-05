@@ -74,9 +74,69 @@ async function getCourse() {
     .count();
   console.log(course);
 }
-// Create
+// // Create
 // createCourse();
 
-// Get
+// // Get
 
-getCourse();
+// getCourse();
+
+// // Update
+// update direct
+async function updateCourse(id,isPublished,name) {
+  const course = await Course.findById(id);
+  if (!course) return;
+
+  course.isPublished=isPublished
+  course.name=name;
+
+  
+  const result = await course.save();
+
+  console.log(result);
+}
+
+// findByIdAndUpdate()
+async function updateCourseByfindByIdAndUpdate(id,isPublished,name) {
+  const course = await Course.findByIdAndUpdate(id,{
+    $set:{
+      author:name,
+      isPublished
+    }
+  },{new:true});
+  console.log(course);
+}
+
+// update()
+async function updateCourseByUpdate(id,isPublished,name) {
+  const result = await Course.update({_id:id},{
+    $set:{
+      author:name,
+      isPublished
+    }
+  });
+  console.log(result);
+}
+
+
+
+
+
+// update direct
+// updateCourse("629a1297ef7f8f1b16da4509",true,"Hasan")
+// updateCourseByUpdate("629a1297ef7f8f1b16da4509",false,"Asamoah")
+// updateCourseByfindByIdAndUpdate("629a1297ef7f8f1b16da4509",true,"Acar")
+
+// // Delete
+
+async function deleteCourse(id) {
+  const result = await Course.deleteOne({_id:id});
+  console.log(result);
+}
+
+
+deleteCourse("629a1297ef7f8f1b16da4509")
+
+
+
+
