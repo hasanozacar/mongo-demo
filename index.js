@@ -7,11 +7,46 @@ mongoose
   .catch((err) => console.log("Could not connect to mongodb", err));
 
 const courseSchema = new mongoose.Schema({
-  name: String,
+  name: {
+    type: String,
+    required: true,
+    minLength:5,
+    maxLength:255,
+    uppercase:true
+    // match:/patern/
+  },
+  category:{
+    type:String,
+    enum:['web','mobile','network'],
+    lowercase:true,
+    trim:true
+
+  },
   author: String,
-  tags: [String],
+  tags: {
+    type:Array,
+    validate:{
+      isAsync:true,
+      validator:function(v,calback) {
+        setTimeout(() => {
+          const result=v && v.length>0
+          calback(result);
+        }, 4000);
+       
+      },
+      message:"A least one tag"
+    } 
+  },
   date: { type: Date, default: Date.now },
   isPublished: Boolean,
+  price:{
+    type:Number,
+    required:function(){return this.isPublished;},
+    min:10,
+    max:200,
+    get: v=> Math.round(v),
+    set: v=> Math.round(v),
+  }
 });
 
 const Course = mongoose.model("Course", courseSchema);
@@ -20,12 +55,17 @@ async function createCourse(params) {
   const course = new Course({
     name: "React js",
     author: "Hasan",
-    tags: ["Fronted", "node"],
+    tags: ["React"],
     isPublished: true,
+    price:15.8,
   });
 
-  const result = await course.save();
-  console.log(result);
+  try {
+    const result = await course.save();
+    console.log(result);
+  } catch (err) {
+    console.log(err.message);
+  }
 }
 
 async function getCourse() {
@@ -75,7 +115,7 @@ async function getCourse() {
   console.log(course);
 }
 // // Create
-// createCourse();
+createCourse();
 
 // // Get
 
@@ -83,44 +123,46 @@ async function getCourse() {
 
 // // Update
 // update direct
-async function updateCourse(id,isPublished,name) {
+async function updateCourse(id, isPublished, name) {
   const course = await Course.findById(id);
   if (!course) return;
 
-  course.isPublished=isPublished
-  course.name=name;
+  course.isPublished = isPublished;
+  course.name = name;
 
-  
   const result = await course.save();
 
   console.log(result);
 }
 
 // findByIdAndUpdate()
-async function updateCourseByfindByIdAndUpdate(id,isPublished,name) {
-  const course = await Course.findByIdAndUpdate(id,{
-    $set:{
-      author:name,
-      isPublished
-    }
-  },{new:true});
+async function updateCourseByfindByIdAndUpdate(id, isPublished, name) {
+  const course = await Course.findByIdAndUpdate(
+    id,
+    {
+      $set: {
+        author: name,
+        isPublished,
+      },
+    },
+    { new: true }
+  );
   console.log(course);
 }
 
 // update()
-async function updateCourseByUpdate(id,isPublished,name) {
-  const result = await Course.update({_id:id},{
-    $set:{
-      author:name,
-      isPublished
+async function updateCourseByUpdate(id, isPublished, name) {
+  const result = await Course.update(
+    { _id: id },
+    {
+      $set: {
+        author: name,
+        isPublished,
+      },
     }
-  });
+  );
   console.log(result);
 }
-
-
-
-
 
 // update direct
 // updateCourse("629a1297ef7f8f1b16da4509",true,"Hasan")
@@ -130,13 +172,8 @@ async function updateCourseByUpdate(id,isPublished,name) {
 // // Delete
 
 async function deleteCourse(id) {
-  const result = await Course.deleteOne({_id:id});
+  const result = await Course.deleteOne({ _id: id });
   console.log(result);
 }
 
-
-deleteCourse("629a1297ef7f8f1b16da4509")
-
-
-
-
+// deleteCourse("629a1297ef7f8f1b16da4509")
